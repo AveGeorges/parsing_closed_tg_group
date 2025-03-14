@@ -1,0 +1,11 @@
+.venv/
+.env
+alembic.ini
+alembic/
+storage/
+__pycache__/
+storage/logs/
+*.session
+*.log
+sqlalchemy.log
+test.db
