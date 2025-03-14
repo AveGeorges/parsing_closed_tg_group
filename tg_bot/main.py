@@ -33,6 +33,7 @@ class ParserConfig:
    MESSAGE_LOG_INTERVAL: int = 50
    MIN_DELAY: int = 1  # Минимальная задержка между запросами
    MAX_DELAY: int = 5  # Максимальная задержка между запросами
+   PAUSE_AFTER_FULL_PARSING: int = 6 * 60 * 60  # Пауза в 6 часов после полного парсинга группы
 
 
 @dataclass
@@ -41,7 +42,7 @@ class ClientConfig:
    session_name: str
    api_id: int
    api_hash: str
-
+   
 
 @dataclass
 class ParserStats:
@@ -99,6 +100,11 @@ class TelegramParser:
 ) -> Optional[int]:
     if not message.text:
         bot_logger.info(f"Message {message.id} has no text, skipping")
+        return None
+     
+      # Проверка на дубликаты
+    if not await check_duplicate(message.text):
+        bot_logger.info(f"Duplicate message {message.id} found, skipping")
         return None
 
     categories = await find_message_categories(message.text, telegram_link)
@@ -296,6 +302,10 @@ class TelegramParser:
          bot_logger.info("Finished processing all links, logging final stats")
          stats.log_final_stats()
          bot_logger.info("Completed parsing iteration")
+         
+         # Добавляем паузу после завершения парсинга всех групп
+         bot_logger.info(f"Pausing for {self.config.PAUSE_AFTER_FULL_PARSING // 3600} hours before next iteration")
+         await asyncio.sleep(self.config.PAUSE_AFTER_FULL_PARSING)
 
 
 async def main() -> None:

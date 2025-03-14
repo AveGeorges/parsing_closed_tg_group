@@ -119,6 +119,7 @@ async def update_tg_link(link: TelegramLink) -> TelegramLink:
         return link
 
 
+@alru_cache(ttl=300)
 async def check_duplicate(text: str) -> bool:
     if not text:
         return True
